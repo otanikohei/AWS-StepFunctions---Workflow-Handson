@@ -1,0 +1,24 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2022-06-30T15:57:05+09:00",
+  "id": "stepfunctionsworkflowhandson20220629",
+  "duration": 5,
+  "title": "AWS Step Function の AWS Step Functions Workflow Studio を使った入門ハンズオン",
+  "summary": "AWS Step Functions Workflow Studio を使った入門ハンズオン",
+  "source": "index.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "awsstepfunctionsworkflowstudio"
+  ],
+  "tags": [
+    "web"
+  ],
+  "feedback": "k-otani@forgevision.com",
+  "url": "stepfunctionsworkflowhandson20220629"
+}

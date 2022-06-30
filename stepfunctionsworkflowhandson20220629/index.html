@@ -1,0 +1,295 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>AWS Step Function の AWS Step Functions Workflow Studio を使った入門ハンズオン</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="stepfunctionsworkflowhandson20220629"
+                  title="AWS Step Function の AWS Step Functions Workflow Studio を使った入門ハンズオン"
+                  environment="web"
+                  feedback-link="k-otani@forgevision.com">
+    
+      <google-codelab-step label="はじめに" duration="5">
+        <p class="image-container"><img alt="インスタンスファミリーの変更" src="img/80a47c0e145ed8b0.gif"></p>
+<p>みなさんは、AWS Step Functions (以下、Step Function) を利用したことがありますか？<br> Step Functions はステートマシンという AWS のマネージドサービスで、AWS Lambda や Amazon Simple Nortification Service などのマイクロサービス・コンポーネントを疎結合して実行できるサービスです。</p>
+<h2 is-upgraded>Amazon States Language</h2>
+<p>Step Fuctions は、JSON ベースの Amazon States Language (ASL) にて記載していきます。この ASL を利用して各ステートをコーディングしながら組み上げていくのは、初心者には敷居が高く習熟する時間も必要です。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/7c665dcb67373d13.png"></p>
+<h2 is-upgraded>AWS Step Functions Workflow Studio</h2>
+<p>AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年 6 月にリリースされた GUI ベースのグラフィカルなコーディングツールです。 ブロックを繋いでいくことで、ワークフローを作成することができ、アクションやフローが比較的短時間でワークフローの作成方法をご理解いただければと思います。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/d38c40a758d67312.png"></p>
+<p>AWS News Blog:<br><a href="https://aws.amazon.com/jp/blogs/aws/new-aws-step-functions-workflow-studio-a-low-code-visual-tool-for-building-state-machines/" target="_blank">New – AWS Step Functions Workflow Studio – A Low-Code Visual Tool for Building State Machines</a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ハンズオンの概要" duration="0">
+        <p>本ハンズオンでは「<strong>ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。</strong>」という簡単なツールを作成します。<br> Step Function Stuio の使い方や、ブロック間の値の渡し方などを理解いただき、最終的に JSON コーディングにステップを進めていただく初心者向けの内容となっています。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/94c908452fcd27c9.png"></p>
+<aside class="special"><p>EC2 インスタンスを起動していると課金されますので、ハンズオンが終了した後は必ず [後片付け]() を実施ください。</p>
+</aside>
+<h2 is-upgraded>インスタンスファミリーを変更するフロー</h2>
+<p>Amazon EC2 インスタンスは、汎用 <strong>m 系ファミリー</strong> や、メモリー最適 <strong>r 系ファミリー</strong> など、用途に応じた様々なインスタンスタイプが用意されています。<br> インスタンスファミリーやインスタンスサイズを変更するには、インスタンスを停止する必要があります。<br> 大まかな流れは以下のようになります。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/4d892ea552e68b7f.png"></p>
+<p>まず、この手順を手動でやってみたいと思います。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="EC2 インスタンスを起動" duration="0">
+        <p>以下、URL をクリックして EC2 コンソールを開きます。</p>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Home:" target="_blank">https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Home:</a></p>
+<p>画面遷移したら、オレンジの [ <strong>インスタンスを起動 ▼</strong> ] をクリックして、ドロップダウンメニューから [ <strong>インスタンスを起動</strong> ] を選択してください。</p>
+<p class="image-container"><img alt="EC2 コンソール" src="img/f41f01d144493053.png"></p>
+<h2 is-upgraded>インスタンスを起動</h2>
+<p>[ <strong>インスタンスを起動</strong> ] の画面に遷移するので、Name タグを指定してください。<br> ここでは <code>handson20220629</code> としました。</p>
+<p>オレンジの [ <strong>インスタンスを起動</strong> ] ボタンをクリックすると、</p>
+<p class="image-container"><img alt="インスタンスを起動" src="img/e55d520c5a789846.png"></p>
+<p>以下のエラーが表示されるので、</p>
+<p class="image-container"><img alt="EC2 コンソール" src="img/b5aa0d9cdb437893.png"></p>
+<p><code>キーペアなし</code> を指定してください。</p>
+<p class="image-container"><img alt="EC2 コンソール" src="img/e7f25619b6e81584.png"></p>
+<aside class="special"><p>このハンズオンは EC2 インスタンスのログイン操作が目的ではいため、必要最低限の設定にてインスタンスを起動しています。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="インスタンスファミリーを変更" duration="0">
+        <p>インスタンスのステータスが [ <strong>実行中</strong> ] になったら、インスタンスタイプの変更を試してみます。<br> インスタンスのチェックボックスにチェックを入れて、[ <strong>アクション</strong> ] から [ <strong>インスタンスの設定</strong> ] と進めてください。すると、[ <strong>インスタンスタイプを変更</strong> ] がグレーアウトしています。</p>
+<p class="image-container"><img alt="EC2 コンソール" src="img/859f6c229df91e57.png"></p>
+<p>では、インスタンスを停止してみましょう。<br> [ <strong>インスタンスの状態</strong> ] から [ <strong>インスタンスを停止</strong> ] を選択してください。</p>
+<p class="image-container"><img alt="EC2 コンソール" src="img/8c5238eeb5733010.png"></p>
+<p>インスタンスの状態が [ <strong>停止中</strong> ] から</p>
+<p class="image-container"><img alt="Stopping" src="img/18f0b853282bec5f.png"></p>
+<p>[ <strong>停止済み</strong> ] に変わります。</p>
+<p class="image-container"><img alt="Stopping" src="img/f6c4e5bfb8b38a31.png"></p>
+<p>再度、[ <strong>アクション</strong> ] から [ <strong>インスタンスの設定</strong> ] と進めると、[ <strong>インスタンスタイプを変更</strong> ] が活性化されて押せるようになっています。<br> [ <strong>インスタンスタイプを変更</strong> ] をクリックして、</p>
+<p class="image-container"><img alt="Stopping" src="img/14108681c07d36e5.png"></p>
+<p><code>t2.micro</code> から <code>t3.nano</code> に変更してください。</p>
+<p class="image-container"><img alt="t2.micro から t3.nano へ変更" src="img/9c012209a2d1533e.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ステートマシンを作成する" duration="0">
+        <p>EC2 の変更手順を確認しましたので、この作業を Step Functions にて実装してみたいと思います。</p>
+<p>まず最初に、EC2 コンソールのブラウザタブとは別のタブで以下 URL を開き、Step Functions コンソールにアクセスしてください。<br> 初めて利用される場合は、以下のようなウェルカムページが表示されるかと思います。</p>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage" target="_blank">https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage</a></p>
+<p>[ <strong>今すぐ始める</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="StepFunctions トップページ" src="img/d67b43bc8eb0ebc7.png"></p>
+<aside class="special"><p>既にステートマシンを作成されたことのある方は、リストが表示されているかと思います。[ <strong>ステートマシンの作成</strong> ] ボタンをクリックして進めてください。</p>
+</aside>
+<h2 is-upgraded>作成方法の選択</h2>
+<p>[ <strong>作成方法の選択</strong> ] 画面に遷移しますので、[ <strong>ワークフローを視覚的に設計 ○</strong> ] と [ <strong>標準</strong> ] のまま、変更せずに [ <strong>次へ</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="作成方法を選択" src="img/98325fcd090426f1.png"></p>
+<p>[ <strong>ステップ 2: ワークフローを設計</strong> ] が表示されるので、インスタンスを起動するアクションを追加してみます。</p>
+<p class="image-container"><img alt="ステップ 2: ワークフローを設計" src="img/87d519473edae394.png"></p>
+<p>検索ボックスに <code>startinstances</code> と入力し、候補に表示された [ <strong>Amazon EC2 StartInstances</strong> ] をフローまでドラッグします。</p>
+<p class="image-container"><img alt="フローにドラッグ" src="img/e3857fd82cb5123b.png"></p>
+<p>右側の [ <strong>API パラメータ</strong> ] に EC2 インスタンスのインスタンス ID を入力してください。</p>
+<p class="image-container"><img alt="API パラメータ" src="img/f09b82bdd57a0c93.png"></p>
+<p>ここまでできたら、[ <strong>次へ</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="API パラメータ" src="img/39fb613527e9c883.png"></p>
+<p>[ <strong>生成されたコードを確認 - 省略可能</strong> ] 画面も [ <strong>次へ</strong> ] をクリックしてください。<br> (スクリーンショットなし)</p>
+<p>[ <strong>ステートマシン設定を指定</strong> ] 画面に遷移するので、名前を設定します。ここでは <code>handson20220629</code> としました。<br> また、アクセス許可は [ <strong>新しいロールの作成</strong> ] が選択されていることを確認してください。</p>
+<p class="image-container"><img alt="ステートマシン設定を指定 - 名前" src="img/323e2d1ce0576753.png"></p>
+<p>ログ記録、X-Ray トレースはエラー発生時の切り分けに便利ですが、本ハンズオンでは作成しません。<br> タグも不要です。</p>
+<p class="image-container"><img alt="ステートマシン設定を指定 - ログ" src="img/ea88f88e318f7050.png"></p>
+<p>オレンジの [ <strong>ステートマシンの作成</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="ステートマシン設定を指定 - ログ" src="img/6a9580cafdda6ac3.png"></p>
+<p>ステートマシンが作成されたら、[実行の開始] ボタンをクリックしてください。<br> 変な名前のボタンですが、上下どちらのボタンをクリックしても実行されます。</p>
+<p class="image-container"><img alt="実行の開始" src="img/ee004140af39e68b.png"></p>
+<p>確認メッセージが表示されたら、再度オレンジの [ <strong>実行の開始</strong> ]ボタンをクリックします。</p>
+<p class="image-container"><img alt="確認メッセージ" src="img/22c7ebcac3c5aa57.png"></p>
+<p>すると、エラーになります。赤くなっているブロック [StartInstances] をクリックし、右側のペインの [例外] タブをクリックすると、権限エラーが発生していたことがわかります。</p>
+<p class="image-container"><img alt="確認メッセージ" src="img/eb9ff1b8086385b8.png"></p>
+<p>IAM コンソールにてポリシーをアタッチします。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="実行ポリシーをアタッチする" duration="0">
+        <p>以下リンクから、3 つめのウインドウで IAM コンソールのロールページを開きます。</p>
+<p><a href="https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles" target="_blank">https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles</a></p>
+<p>IAM ロールのページで、検索ボックスに <code>StepFunctions</code> まで入力すると、先ほどステートマシンを作成したときに自動生成されたロールが表示されます。</p>
+<p class="image-container"><img alt="確認メッセージ" src="img/ff371d9f094fb88a.png"></p>
+<aside class="special"><p>複数表示される場合は、StepFunctions の画面からアタッチしたロールを確認してください。</p>
+</aside>
+<p>ロールの名前をクリックして画面遷移したら、[ <strong>許可を追加</strong> ] から [ <strong>ポリシーをアタッチ</strong> ] ボタンをクリックして下さい。</p>
+<p class="image-container"><img alt="インラインポリシーをアタッチ" src="img/722f089fc225f0ab.png"></p>
+<p><code>AmaoznEC2FullAccess</code> のチェックボックスにチェックを入れて、[ <strong>ポリシーをアタッチ</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="ポリシーをアタッチ" src="img/912b68b7f761096f.png"></p>
+<p>追加で、<code>AmazonSSMManagedInstanceCore</code> もアタッチしておいてください。</p>
+<p class="image-container"><img alt="ポリシーをアタッチ" src="img/face681bc1856732.png"></p>
+<p>以下のようなポリシーになれば OK です。<br> IAM コンソールのウインドウを閉じて、次のステップに進んでください。</p>
+<p class="image-container"><img alt="ポリシーをアタッチ" src="img/5bb09a8d09712b2f.png"></p>
+<aside class="special"><p>本ハンズオンでは簡易にするため、FullAccess ポリシーをアタッチしています。最低限、以下のポリシーをアタッチすれば動きますので、参考にしていただければと思います。</p>
+</aside>
+<h3 is-upgraded>&lt;ターゲットのインスタンスのみで絞れるもの&gt;</h3>
+<ul>
+<li>EC2 StartInstances</li>
+<li>EC2 StopInstances</li>
+</ul>
+<h3 is-upgraded>&lt;該当のパラメーターだけで絞れるもの&gt;</h3>
+<ul>
+<li>SSM GetParameters</li>
+</ul>
+<h3 is-upgraded>&lt;すべて&gt;</h3>
+<ul>
+<li>EC2 DescribeInstances</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ステートの再実行" duration="0">
+        <p>IAM ロールの設定ができたので、再度ステートを実行してみましょう。<br> [ <strong>新しい実行</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/89640e76166756ae.png"></p>
+<p>成功すると [ <strong>StartInstances</strong> ] のブロックが緑色になります。ブロックをクリックすると右側の [ <strong>入力と出力</strong> ] のタブに入力と出力の JSON コードがそれぞれ確認できます。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/629022dc98f5bd50.png"></p>
+<p>EC2 コンソールのタブに移動すると、インスタンスが起動しているのが確認できるかと思います。<br> [ <strong>停止済み</strong> ] のステータスから変わらない方は、下図の [更新] ボタンをクリックして確認してください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/b60276c1162f9cf6.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="アクションの追加" duration="0">
+        <p>更にアクションブロックを追加していきます。<br> インスタンスファミリーを変更するフローは以下の通りでした。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/4d892ea552e68b7f.png"></p>
+<h2 is-upgraded>インスタンスを停止する</h2>
+<p>上から順番にアクションを入れていきましょう。<br> [ <strong>ステートマシンの編集</strong> ] ボタンをクリックし、</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/f9e1bbc5b6d5351a.png"></p>
+<p>[ <strong>Workflow Studio</strong> ] をクリックします。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/d12b651721669d2d.png"></p>
+<p>アクションから、[ <strong>EC2: StopInstances</strong> ] をドラッグして、[ <strong>StartInstances</strong> ] の上に挿入します。　　</p>
+<p>[ <strong>API パラメータ</strong> ] にインスタンス ID を入力します。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/751e48da21a87943.png"></p>
+<p>これで、インスタンスを止めれるようになりました。</p>
+<h2 is-upgraded>インスタンスファミリーを変更する</h2>
+<p>インスタンスファミリーを変更するには、<code>ModifyInstanceAttribute</code> を利用します。</p>
+<p>アクションから、[ <strong>EC2: ModifyInstanceAttribute</strong> ] をドラッグして、[ <strong>StopInstances</strong> ] と [ <strong>StartInstances</strong> ] の間に挿入します。　　</p>
+<p>[ <strong>API パラメータ</strong> ] には、</p>
+<pre><code>{
+  &#34;InstanceId&#34;: &#34;＜インスタンス ID＞&#34;,
+  &#34;Attribute&#34;: &#34;instanceType&#34;,
+  &#34;Value&#34;: &#34;t2.micro&#34;
+}
+</code></pre>
+<p>と入力してください。</p>
+<aside class="special"><p>＜インスタンス ID＞ はご自身のインスタンス ID に書き換えてください。</p>
+</aside>
+<p>以下のようなイメージです。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/44b5d6ab8d1aa273.png"></p>
+<p>これで、インスタンスファミリーを「t2.micro」に変更できるようになりました。</p>
+<h2 is-upgraded>インスタンスが停止しているか確認する</h2>
+<p>インスタンスの停止状態は <code>DescribeInstances</code> を利用します。<br> アクションから、[ <strong>EC2: DescribeInstances</strong> ] をドラッグして、[ <strong>StopInstances</strong> ] と [ <strong>ModifyInstanceAttribute</strong> ] の間に挿入します。　　</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/f58207b2e5e844bd.png"></p>
+<p>[ <strong>API パラメータ</strong> ] には、<strong>StopInstances</strong> のブロックに登録したものと同じ以下を入力してください。</p>
+<pre><code>{
+  &#34;InstanceIds&#34;: [&#34;＜インスタンス ID＞&#34;]
+}
+</code></pre>
+<aside class="special"><p>＜インスタンス ID＞ はご自身のインスタンス ID に書き換えてください。</p>
+</aside>
+<p class="image-container"><img alt="ステートの再実行" src="img/ea297154ee56f823.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="インスタンスの停止を待つ" duration="0">
+        <p>一通りのアクションは追加できましたが、手動でインスタンスファミリーを変更した際のアクションをもっと細分化すると、</p>
+<ul>
+<li>インスタンスが停止しているか確認する</li>
+<li>インスタンスが停止するのを待つ</li>
+</ul>
+<p>というアクションを人間がよしなに行っています。これを機械にやってもらうための設定をします。</p>
+<p class="image-container"><img alt="インスタンスファミリーの変更" src="img/5d008cd800e7f922.png"></p>
+<h2 is-upgraded>Choice</h2>
+<p>インスタンスが停止したかどうか「状態」は、<code>DescribeInstances</code> で取れているので、この取得した「状態」をみて、次のステップに進むのか待つのか判断をする必要があります。<br> Choice を使って分岐を入れます。</p>
+<p>ここまで [ <strong>アクション</strong> ] を追加してきましたが、すぐ横に [ <strong>フロー</strong> ] があるのでクリックしてください。<br> フローには、分岐や待機といった人間が自然と行っている「考えて行動する」処置を行うための機能があります。</p>
+<p>Choice をドラッグして、[ <strong>DescribeInstances</strong>] と [ <strong>StopInstances</strong> ] の間に挿入してください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/ec2d7f646d5f594f.png"></p>
+<p>判定は基準はインスタンスが停止したかどうか？です。<br> [ <strong>Rule #1</strong> ] をクリックして、</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/6738c5eb277e251.png"></p>
+<p>[ <strong>Add conditions</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/f8028e4766586817.png"></p>
+<p>[ <strong>Conditions for rule #1</strong> ] ダイヤログが開くので、以下の内容を入力して [ <strong>条件を保存する</strong> ] ボタンをクリックしてください。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>Not</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Variable</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Operator</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Value</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>空欄</p>
+</td><td colspan="1" rowspan="1"><p>$.Reservations[0].Instances[0].State.Name</p>
+</td><td colspan="1" rowspan="1"><p>matches string</p>
+</td><td colspan="1" rowspan="1"><p>stopped</p>
+</td></tr>
+</table>
+<aside class="special"><p>stopped というステータスで判定します。</p>
+</aside>
+<p>以下のようなイメージです。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/7a30f0dad1451e12.png"></p>
+<p>インスタンスが停止している場合は、<strong>StartInstances</strong> のステートでインスタンスを起動するので、[ <strong>Then next state is:</strong> ] のドロップダウンメニューから [ <strong>StartInstances</strong> ] を選択してください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/8aa2605a6fb37ca7.png"></p>
+<h2 is-upgraded>インスタンスが停止していない場合のアクション</h2>
+<p>インスタンスが停止していない場合は、停止するまで待つ必要があります。<br> ステートの処理を待機させるには <code>wait</code> を使います。<br> [ <strong>フロー</strong> ] タブから、[ <strong>wait</strong> ] ブロックをドラッグして、[Default] 側にドロップしてください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/e26021b909ad952b.png"></p>
+<p>右側の詳細ペインで、秒を <code>30</code> seconds に、次の状態を <code>ModifyInstanceAttribute</code> にします。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/5db658a157f29f8.png"></p>
+<p>これで完成です！<br> 以下の画像と見比べて異なる部分があれば修正してください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/e4c97a4bbb386345.png"></p>
+<p>問題なければ、[ <strong>適用して終了</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/8e3cae473bc6f38a.png"></p>
+<aside class="special"><p>この時点では Workflow Studio を終了しただけで、ステートマシンの設定は保存されていません。必ず次の手順を行って保存してください。</p>
+</aside>
+<p>Step Functions の画面に戻るので、[ <strong>保存</strong> ] ボタンをクリックして、ステートマシンの設定を保存してください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/ec9d8ec25288b75f.png"></p>
+<p>確認メッセージが表示されますので、[ <strong>保存を続行します</strong> ] ボタンをクリックして、保存します。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/bce3f42931148589.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="テスト" duration="0">
+        <p>準備が整いましたので、テスト実行してみてください。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/3ecb5305db4b2036.png"></p>
+<p>ステートが進んでいくのがお分かりいただけるかと思います。<br> 水色が実行されているステートで、緑が成功したステートになります。</p>
+<p class="image-container"><img alt="ステートの再実行" src="img/cffee2a625508b25.gif"></p>
+<p>EC2 コンソールから、インスタンスが m6i.large で起動したことを確認してください。</p>
+<aside class="special"><p>確認できたら、課金と止めるためインスタンスを停止してください。</p>
+</aside>
+<p class="image-container"><img alt="ステートの再実行" src="img/12e58921a438eb7d.png"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
