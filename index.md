@@ -13,17 +13,22 @@ Duration: 0:05:00
 ![インスタンスファミリーの変更](./images/00_0_top_image.gif)
 
 みなさんは、AWS Step Functions (以下、Step Functions) を利用したことがありますか？  
-Step Functions はステートマシンという AWS のマネージドサービスで、AWS Lambda や Amazon Simple Nortification Service などのマイクロサービス・コンポーネントを疎結合して実行できるサービスです。  
+Step Functions は AWS のマネージドサービスで、ワークフローに AWS Lambda や Amazon Simple Nortification Service などのマイクロサービス・コンポーネントを疎結合して実行できるサービスです。  
+
+そのワークフローを保存する箱をステートマシンと呼びます。  
+以下は、ステートマシンとワークフローのイメージ図です。
+
+![ステートマシン](./images/00_3_state_machine_state.png)
 
 ### Amazon States Language
 
-Step Fuctions は、JSON ベースの Amazon States Language (以下、ASL) にて記載していきます。この ASL を利用して各ステートをコーディングしながら組み上げていくのは、初心者には敷居が高く習熟する時間も必要です。  
+各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を利用してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。  
 
 ![Amazon States Language](./images/00_1_amazon_state_language.png)  
 
 ### AWS Step Functions Workflow Studio
-AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年 6 月にリリースされた GUI ベースのグラフィカルなコーディングツールです。
-ブロックを繋いでいくことで、ワークフローを作成することができ、アクションやフローが比較的短時間でワークフローの作成方法をご理解いただければと思います。
+AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年にリリースされた GUI ベースのグラフィカルなコーディングツールです。
+これまでコーディングが必須だったワークフロー構築が、ブロックごとに繋いで視覚的に作成できるようになりました。
 
 ![AWS Step Functions Workflow Studio](./images/00_2_workflow_studio.png)  
 
@@ -32,22 +37,23 @@ AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年 6 �
 
 ## ハンズオンの概要
 
-本ハンズオンでは「**ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。**」という簡単なツールの作成を通じて Step Functions と Workflow Studio の使い方を学べます。  
+本ハンズオンでは「**ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。**」という簡単なツールの作成を通じて Step Functions と Workflow Studio の使い方を学ぶことができます。  
+
+![処理イメージ](./images/04_handson_overview.png)  
 
 ### 準備
 
-セクション 3 〜 4 にて、手動でインスタンスファミリーを変更する手順を学びます。
+セクション 3 〜 4 では、手動でインスタンスファミリーを変更する手順を学びます。
 
 ### 基本編
-セクション 5 〜 10 にて、インスタンスファミリーを変更する Step Functions を設定し、Workflow Studio の使い方や、ブロック間の値の渡し方などを学びます。  
+セクション 5 〜 10 では、インスタンスファミリーを変更する Step Functions を設定し、Workflow Studio の使い方や、ブロック間の値の渡し方などを学びます。  
 
 ### 応用編
 セクション 11 以降では、EventBridge と連携して、指定時間にインスタンスファミリーを変更する方法を学びます。  
-また、各ステート間で受け渡す値を変数にして、変更するインスタンスを動的に処理する方法もご理解いただけます。  
+EBS 最適化に対応している次世代インスタンスと、EBS 最適化に対応していない旧インスタンスの切り替えに必要な属性の変更方法や、フローを使った分岐もご理解いただけます。  
+また、各ステート間で受け渡す値を変数にして、EventBridge 側で一括変更する処理についても学ぶことができます。  
 
 本ハンズオンを最後まで進めると JSON コーディングにステップを進めていただくための、基本的な使い方や概念が理解できるかと思います。 
-
-![処理イメージ](./images/04_handson_overview.png)  
 
 <aside class="negative">EC2 インスタンスは起動している間に課金されます。ハンズオンが終了した後は必ず後片付けを実施ください。</aside>
 
@@ -61,7 +67,7 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 まず、この手順を手動操作してみます。  
 
-## EC2 インスタンスを起動
+## 手動で EC2 インスタンスを起動
 
 以下、URL をクリックして EC2 コンソールを開きます。  
 
@@ -88,9 +94,9 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ![キーペアなし](./images/09_keypair_less.png)
 
-<aside class="information">このハンズオンは EC2 インスタンスのログイン操作が目的ではいため、必要最低限の設定にてインスタンスを起動しています。</aside>
+<aside class="positive">このハンズオンは EC2 インスタンスのログイン操作が目的ではいため、必要最低限の設定にてインスタンスを起動しています。</aside>
 
-## インスタンスファミリーを変更
+## 手動でインスタンスファミリーを変更
 
 インスタンスのステータスが [ **実行中** ] になったら、
 
@@ -125,22 +131,26 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ![t2.micro から t3.nano へ変更](./images/15_t2micro_t3nano.png)
 
-この状態でインスタンスを起動すると t3.micro で上がってくるのですが、一旦停止のまま起動せずに置いておいてください。
+以上がインスタンスタイプを手動で変更する方法になります。  
+この状態でインスタンスを起動すると EC2 インスタンスは t3.micro で上がってきますが、一旦停止のまま起動せずに置いておいてください。
 
 ## ステートマシンを作成する
 
-前ページにて、EC2 の変更手順を確認しました。続いて、この変更手順を Step Functions にて実装します。  
+前セクションで、手動による EC2 の変更手順を確認しました。  
+続いて、手動変更手順を Step Functions にて実装します。  
 
-まず最初に、EC2 コンソールのブラウザタブとは別のタブで以下 URL を開き、Step Functions コンソールにアクセスしてください。  
-初めて利用される場合は、以下のようなウェルカムページが表示されるかと思います。  
+まず最初に、EC2 コンソールを開いたブラウザタブとは別のタブで以下 URL を開いてください。
 
 [https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage](https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage)  
+
+Step Functions コンソールが開きます。  
+初めて利用される場合は、以下のようなウェルカムページが表示されるかと思います。  
 
 [ **今すぐ始める** ] ボタンをクリックしてください。  
 
 ![StepFunctions トップページ](./images/01_stepfunctions_toppage.png)  
 
-<aside class="information">既にステートマシンを作成されたことのある方は、リストが表示されているかと思います。[ <strong>ステートマシンの作成</strong> ] ボタンをクリックして進めてください。</aside>
+<aside class="positive">既にステートマシンを作成されたことのある方は、リストが表示されているかと思います。[ <strong>ステートマシンの作成</strong> ] ボタンをクリックして進めてください。</aside>
 
 ### 作成方法の選択
 
@@ -148,22 +158,26 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ![作成方法を選択](./images/02_select_createmode.png)  
 
-[ **作成方法を選択** ] が表示されず、以下のように [ **Hello World サンプルを確認** ] が表示された場合は一旦 [ **キャンセル** ] をクリックし、
+<aside class="negative">::: 作成方法の選択 が開かない方 :::</aside>
+
+上記の、[ **作成方法を選択** ] が表示されず、以下のように [ **Hello World サンプルを確認** ] が表示された場合は、一旦、画面右下にある [ **キャンセル** ] をクリックし、
 
 ![作成方法を選択](./images/02_create_hellow_world_sample.png)  
 
-左側のドロアーメニューを展開し、[ **ステートマシン** ] をクリックして、[ **ステートマシンの作成** ] をクリックすると [ **作成方法の選択** ] が表示されるかと思います。
+左側のドロアーメニューを展開し、[ **ステートマシン** ] をクリックして、[ **ステートマシンの作成** ] をクリックすると [ **作成方法の選択** ] が表示されるかと思います。  
 
 ![作成方法を選択](./images/02_create_state_machine.png)  
 
-[ **ステップ 2: ワークフローを設計** ] が表示されるので、インスタンスを起動するアクションを追加してみます。  
+###  ステップ 2: ワークフローを設計
+
+[ **ステップ 2: ワークフローを設計** ] が表示されたら、インスタンスを起動するアクションを追加してみます。  
 [ **Workflow Sturio へようこそ！** ] のメッセージが表示された方は [ **×** ] アイコンをクリックして閉じてください。  
 
 ![ステップ 2: ワークフローを設計](./images/03_design_workflow.png)
 
 左側のペインにある検索ボックスに `startinstances` と入力し、候補に表示された [ **Amazon EC2 StartInstances** ] をフローまでドラッグします。
 
-<aside class="negative">Amazon Lightsail や、OpsWorks の StartInstance と間違えないよう気をつけてください！</aside>
+<aside class="negative">Amazon Lightsail や、OpsWorks の StartInstance など同じようなブロックが多数あります。間違えないよう気をつけてください！</aside>
 
 ![フローにドラッグ](./images/16_drag_acrion.png)
 
@@ -177,8 +191,12 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ![次へ](./images/18_next_button.png)  
 
+### 生成されたコードを確認
+
 [ **生成されたコードを確認 - 省略可能** ] 画面も [ **次へ** ] をクリックしてください。  
 (スクリーンショットなし)
+
+### ステートマシン設定を指定
 
 [ **ステートマシン設定を指定** ] 画面に遷移するので、名前を設定します。ここでは `handson20220629` としました。  
 また、アクセス許可は [ **新しいロールの作成** ] が選択されていることを確認してください。  
@@ -194,8 +212,10 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ![ステートマシンの作成ボタンをクリック](./images/21_create_state.png)
 
-ステートマシンが作成されたら、[実行の開始] ボタンをクリックしてください。  
-変な名前のボタンですが、上下どちらのボタンをクリックしても実行されます。
+### ステートマシンを実行してみる
+
+ステートマシンが作成されたら、[ **実行の開始** ] ボタンをクリックしてください。  
+「実行の開始」という変な名前のボタンですが、上下どちらのボタンをクリックしても実行されます。
 
 ![実行の開始](./images/22_run_task.png)
 
@@ -211,16 +231,23 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 ## 実行ポリシーをアタッチする
 
-以下リンクから、3 つめのウインドウで IAM コンソールのロールページを開きます。
+前の手順で、Step Functions ステートマシンに `Amazon EC2 StopInstances` ステートを追加して、テスト実行しました。  
+しかし、ステートマシンに権限が不足して、実行エラーになりました。
+
+本ステップでは、IAM ポリシーを追加アタッチしてステートを実行できるようにします。
+
+### IAM コンソールを開く
+
+以下リンクから、3 つめのブラウザタブで IAM コンソールのロールページを開きます。
 
 [https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles)
 
-IAM ロールのページで、検索ボックスに `StepFunctions` まで入力すると、先ほどステートマシンを作成したときに自動生成されたロールが表示されます。  
+IAM ロールのページで、検索ボックスに `StepFunctions` まで入力して [ENTER] キーを押下すると、先ほどステートマシンを作成したときに自動生成されたロールが表示されます。  
 
 ![IAM ロールの検索ボックス](./images/25_IAM_Role.png)
 
-<aside class="infomarion">複数表示される場合は、StepFunctions の画面からアタッチしたロールを確認してください。  
-パンくずリストでステートマシン名をクリックして、IAM ロール ARN を確認してください。</aside>
+<aside class="infomarion">複数表示される場合は、StepFunctions の画面からロール名を確認してください。  
+パンくずリストでステートマシン名をクリックすると、IAM ロール ARN が表示されます。</aside>
 
 ![IAM ロールの検索ボックス](./images/25_1_where_iam_role_attached.png)
 
@@ -232,23 +259,12 @@ IAM ロールのページで、検索ボックスに `StepFunctions` まで入�
 
 ![AmazonEC2FullAccess ポリシーをアタッチ](./images/27_policy_attach.png)
 
-追加で、`AmazonSSMManagedInstanceCore` もアタッチしておいてください。
-
-![AmazonSSMManagedInstanceCore ポリシーをアタッチ](./images/28_policy_attach2.png)
-
-以下のようなポリシーになれば OK です。  
-IAM コンソールのウインドウを閉じて、次のステップに進んでください。
-
-![ポリシーのアタッチ状況](./images/29_role_policy.png)
-
-<aside class="">本ハンズオンでは簡易にするため、FullAccess ポリシーをアタッチしています。最低限、以下のポリシーをアタッチすれば動きますので、参考にしていただければと思います。</aside>
+<aside class="">本ハンズオンは操作を簡易にするため、FullAccess ポリシーをアタッチしています。最低限、以下のポリシーをアタッチすれば動きますので、参考にしていただければと思います。</aside>
 
 #### <ターゲットのインスタンスのみで絞れるもの>
 - EC2 StartInstances
 - EC2 StopInstances
-
-#### <該当のパラメータだけで絞れるもの>
-- SSM GetParameters
+- EC2 ModifyInstanceAttribute
 
 #### <すべて>
 - EC2 DescribeInstances
@@ -271,15 +287,17 @@ EC2 コンソールのタブに移動すると、インスタンスが起動し�
 
 ## アクションの追加
 
-StepFunction の大まかな操作手順はご理解いただけたかと思います。  
-ここからは、更にアクションブロックを追加していきます。  
+EC2 インスタンスは Step Functions から起動させることができましたでしょうか。
+
+ここから更にアクションブロックを追加していきます。  
 インスタンスファミリーを変更するフローは以下の通りでした。
+
+残りのアクションを、上から順番に入れていきましょう。  
 
 ![インスタンスファミリーの変更](./images/05_instance_family_changeflow.png)
 
 ### インスタンスを停止する
 
-上から順番にアクションを入れていきましょう。  
 [ **ステートマシンの編集** ] ボタンをクリックし、
 
 ![ステートマシンの編集](./images/33_edit_state_machine.png)
@@ -295,6 +313,8 @@ StepFunction の大まかな操作手順はご理解いただけたかと思い�
 ![API パラメータの入力](./images/35_ec2_stopinstances.png)
 
 これで、インスタンスを止めれるようになりました。
+
+<aside class="positive">API パラメータに入力する JSON は StopInstances に入力したものと同じです。</aside>
 
 ### インスタンスファミリーを変更する
 
@@ -316,7 +336,7 @@ StepFunction の大まかな操作手順はご理解いただけたかと思い�
 
 <aside class="positive">＜インスタンス ID＞ はご自身のインスタンス ID に書き換えてください。</aside>  
 
-<aside class="positive">m6i.large インスタンスは、m5.large インスタンスの次世代 intel 製インスタンスです。</aside>  
+<aside class="positive">m6i.large インスタンスは m5.large インスタンスの、次世代 intel 製インスタンスです。</aside>  
 
 <aside class="negative">t2.micro は t3.nano から変更すると、EBS ボリューム最適化の関係でエラーになるため m6i.large にしています。</aside>  
 
@@ -343,7 +363,7 @@ StepFunction の大まかな操作手順はご理解いただけたかと思い�
 }
 ```
 
-<aside class="information">＜インスタンス ID＞ はご自身のインスタンス ID に書き換えてください。</aside>  
+<aside class="positive">＜インスタンス ID＞ はご自身のインスタンス ID に書き換えてください。</aside>  
 
 ![ステートの再実行](./images/44_describe_instances_api_parameter.png)
 
@@ -354,26 +374,29 @@ StepFunction の大まかな操作手順はご理解いただけたかと思い�
 - インスタンスが停止しているか確認する
 - インスタンスが停止するのを待つ
 
-というアクションを人間がよしなに行っています。これを機械にやってもらうための設定をします。  
+というアクションが必要です。特に「待つ」アクションは人間だとよしなに行えますが、ステートマシンにやってもらう場合は待ち時間の設定などが必要です。  
 
 ![インスタンスファミリーの変更フロー2](./images/37_Change_flow.png)
 
 ### Choice
 
-インスタンスが停止したかどうか「状態」は、`DescribeInstances` で取得できているため、「状態」をみて、次のステップに進むのか待つのか判断をする必要があります。  
-Choice を使って分岐を入れます。
+インスタンスが停止したかどうか「状態」は、前ステップで設定した `DescribeInstances` で取得できているため、「状態」をみて、次のステップに進むのか待つのか判断を挿入します。  
 
-ここまで [ **アクション** ] を追加してきましたが、すぐ横に [ **フロー** ] があるのでクリックしてください。  
-フローを使うと、分岐や待機といった人間が自然と行っている「考えて行動する」処理を行えます。  
+具体的には、Choice を使って分岐を入れます。
 
-Choice をドラッグして、[ **DescribeInstances** ] と [ **ModifyInstanceAttribute** ] の間に挿入してください。
+前手順までに [ **アクション** ] を複数追加してきましたが、アクションのすぐ横のタブに [ **フロー** ] がありますのでクリックしてください。  
+「フロー」は、ステートマシンに分岐や待機といった人間が自然と行っている「考えて行動する」処理を追加する際に挿入します。  
+
+Choice のブロックをドラッグして、[ **DescribeInstances** ] と [ **ModifyInstanceAttribute** ] の間に挿入してください。
 
 ![Choice](./images/38_choice_drug.png)
 
-Choice のブロックをクリックします。  
-すると右側に Choice の詳細ペインが表示されます。判定ルールを追加します。  
+挿入した Choice のブロックをクリックして選択します。  
+すると右側に Choice の詳細ペインが表示されるので、判定ルールを追加します。  
 
-判定基準は「インスタンスが停止したかどうか？」ですので、[ **Rule #1** ] をクリックして、
+判定基準は「インスタンスが停止したかどうか？」です。  
+
+[ **Rule #1** ] の右側にあるリンクボタンをクリックして、
 
 ![Rule #1](./images/39_choice_detail.png)
 
@@ -387,13 +410,15 @@ Choice のブロックをクリックします。
 | ---- | ---- | ---- | ---- |
 |  空欄  |  $.Reservations[0].Instances[0].State.Name  | matches string | stopped |
 
-<aside class="information">stopped というステータスでインスタンスの停止状態を判定します。</aside>
+<aside class="positive">stopped というステータスでインスタンスの停止状態を判定します。</aside>
 
 以下のようなイメージです。
 
 ![Conditions for rule #1](./images/41_conditions_for_rule.png)
 
-インスタンスが停止している場合は、**ModifyInstanceAttribute** のステートでインスタンスファミリーを変更するので、[ **Then next state is:** ] のドロップダウンメニューから [ **ModifyInstanceAttribute** ] を選択してください。
+### インスタンスが停止していた場合のアクション
+
+インスタンスが停止していたら、次のステート **ModifyInstanceAttribute** でインスタンスファミリーを変更しますので、[ **Then next state is:** ] のドロップダウンメニューから [ **ModifyInstanceAttribute** ] を選択してください。
 
 ![StartInstances](./images/45_choice_rule_after.png)
 
@@ -408,6 +433,8 @@ Choice のブロックをクリックします。
 右側の詳細ペインで、秒を `30` seconds に、次の状態を `DescribeInstances` にします。
 
 ![Wait の設定](./images/46_wait_detail.png)
+
+### ステートマシンを保存する
 
 これで完成です！  
 以下の画像と見比べて異なる部分があれば修正してください。
@@ -441,9 +468,14 @@ Step Functions の画面に戻るので、[ **保存** ] ボタンをクリッ�
 
 EC2 コンソールから、インスタンスが m6i.large で起動したことを確認してください。  
 
-<aside class="information">確認できたら、課金を止めるためインスタンスを停止してください。</aside>
+<aside class="positive">確認できたら、課金を止めるためインスタンスを停止してください。</aside>
 
 ![インスタンスが起動するので停止してください](./images/54_ec2_stop.png)
+
+インスタンスが停止できたら、本ハンズオンの基本編は終了です。  
+一旦、お疲れ様でした。  
+
+ここで終了する方は、後片付けのセッションまでジャンプしてください。
 
 ## アドバンスドステップ
 
@@ -741,7 +773,7 @@ Rule #1 の `Variable` を
 }
 ```
 
-<aside class="information">＜インスタンス ID＞ はインスタンスの ID に書き換えてください。</aside>
+<aside class="positive">＜インスタンス ID＞ はインスタンスの ID に書き換えてください。</aside>
 
 ### EventBrige
 
@@ -762,13 +794,21 @@ EventBridge のウインドウを閉じた方は、以下をクリックして�
 }
 ```
 
-<aside class="information">＜インスタンス ID＞ はインスタンスの ID に書き換えてください。</aside>
+<aside class="positive">＜インスタンス ID＞ はインスタンスの ID に書き換えてください。</aside>
 
 こんな感じです。ルールを更新して、有効化し、イベントが実行されてインスタンスファミリーが変更されるのを確認してください。
 
 ![パラメータストア](./images/75_const.png)
 
 ## 後片付け
+
+みなさんお疲れ様でした。ハンズオン終了後も継続して従量課金されないよう、本ハンズオンで作成したリソースは削除してください。  
+継続して課金が行われるケースとしては、以下が考えられます。  
+
+- EC2 インスタンスが起動したまま、課金されていた
+- EventBridge を削除し忘れて、ステートが何度も実行されていた
+
+**意図しないコストを避けるためリソース削除をお願いします。**  
 
 ### セキュリティグループ
 
@@ -778,12 +818,14 @@ EC2 インスタンスを削除する前に、セキュリティグループの�
 
 ![パラメータストア](./images/91_ec2_securitygroup.png)
 
-<aside class="information"> (launch-wizard-X) という名前がついているかと思います。</aside>
+<aside class="positive"> (launch-wizard-X) という名前がついているかと思います。</aside>
 
 ### EC2 インスタンス
 
-EC2 にチェックを入れて、[ **インスタンスの状態** ] から、[ **インスタンスを終了** ] ボタンをクリックしてください。
-EC2 が終了したら、先ほど控えたセキュリティグループを削除してください。
+EC2 にチェックを入れて、[ **インスタンスの状態** ] から、[ **インスタンスを終了** ] ボタンをクリックしてください。  
+インスタンスの状態が「終了済み」となっていたら、そのうち非表示になりますので問題ございません。  
+
+EC2 を終了できたら、先ほど控えたセキュリティグループを削除してください。
 
 [EC2 のセキュリティグループ](https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#SecurityGroups) を開き、削除してください。
 
@@ -797,7 +839,7 @@ EC2 が終了したら、先ほど控えたセキュリティグループを削�
 [EventBridge のルール一覧](https://ap-northeast-1.console.aws.amazon.com/events/home?region=ap-northeast-1#/rules) を開き、該当のルールを開いてください。  
 EventBridge ルールを削除する前に、[ **ターゲット** ] タブから作成した IAM ロールの名前を控えておいてください。
 
-ルールは [ **削除** ] ボタンから削除してください。
+ルールは画像の右側に表示されている [ **削除** ] ボタンから削除してください。
 
 ![パラメータストア](./images/92_eventbridge_role.png)
 
