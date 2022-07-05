@@ -22,12 +22,12 @@ Step Functions は AWS のマネージドサービスで、ワークフローに
 
 ### Amazon States Language
 
-各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を利用してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。  
+各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を理解してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。  
 
 ![Amazon States Language](./images/00_1_amazon_state_language.png)  
 
 ### AWS Step Functions Workflow Studio
-AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年にリリースされた GUI ベースのグラフィカルなコーディングツールです。
+AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年にリリースされたステートマシンを構築するためのローコードのビジュアルツールです。  
 これまでコーディングが必須だったワークフロー構築が、ブロックごとに繋いで視覚的に作成できるようになりました。
 
 ![AWS Step Functions Workflow Studio](./images/00_2_workflow_studio.png)  
@@ -37,21 +37,21 @@ AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年に�
 
 ## ハンズオンの概要
 
-本ハンズオンでは「**ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。**」という簡単なツールの作成を通じて Step Functions と Workflow Studio の使い方を学ぶことができます。  
+本ハンズオンでは Workflow Studio で「**ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。**」という簡単なツールを作成します。  
+ツールの作成を通じて Workflow Studio の使い方とステートマシンの概要を学ぶことができます。  
 
 ![処理イメージ](./images/04_handson_overview.png)  
 
 ### 準備
-
 セクション 3 〜 4 では、手動でインスタンスファミリーを変更する手順を学びます。
 
 ### 基本編
 セクション 5 〜 10 では、インスタンスファミリーを変更する Step Functions を設定し、Workflow Studio の使い方や、ブロック間の値の渡し方などを学びます。  
 
 ### 応用編
-セクション 11 以降では、EventBridge と連携して、指定時間にインスタンスファミリーを変更する方法を学びます。  
-EBS 最適化に対応している次世代インスタンスと、EBS 最適化に対応していない旧インスタンスの切り替えに必要な属性の変更方法や、フローを使った分岐もご理解いただけます。  
-また、各ステート間で受け渡す値を変数にして、EventBridge 側で一括変更する処理についても学ぶことができます。  
+セクション 11 以降では、Amazon EventBridge と連携して、指定時間にインスタンスファミリーを変更する方法を学びます。  
+**EBS 最適化** に対応している次世代インスタンスと、**EBS 最適化** に対応していない旧インスタンスの切り替えに必要な属性の変更方法や、フローを使った分岐もご理解いただけます。  
+また、各ステート間で受け渡す値を変数にして、EventBridge 側で一括変更する手法についても学ぶことができます。  
 
 本ハンズオンを最後まで進めると JSON コーディングにステップを進めていただくための、基本的な使い方や概念が理解できるかと思います。 
 
@@ -139,7 +139,7 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 前セクションで、手動による EC2 の変更手順を確認しました。  
 続いて、手動変更手順を Step Functions にて実装します。  
 
-まず最初に、EC2 コンソールを開いたブラウザタブとは別のタブで以下 URL を開いてください。
+まず最初に、EC2 コンソールを開いたウインドウ (ブラウザのタブ) とは別で以下 URL を開いてください。
 
 [https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage](https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage)  
 
@@ -238,7 +238,7 @@ Step Functions コンソールが開きます。
 
 ### IAM コンソールを開く
 
-以下リンクから、3 つめのブラウザタブで IAM コンソールのロールページを開きます。
+以下リンクから、3 つめのウインドウ (ブラウザのタブ) で IAM コンソールのロールページを開きます。
 
 [https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles)
 
@@ -280,7 +280,7 @@ IAM ロールの設定ができたので、再度ステートを実行してみ�
 
 ![入力と出力](./images/31_Start_Instances_ok.png)
 
-EC2 コンソールのタブに移動すると、インスタンスが起動しているのが確認できるかと思います。  
+EC2 コンソールのウインドウ (ブラウザのタブ) に移動すると、インスタンスが起動しているのが確認できるかと思います。  
 [ **停止済み** ] のステータスから変わらない方は、下図の [更新] ボタンをクリックして確認してください。  
 
 ![更新ボタン](./images/32_ec2_running.png)
@@ -658,17 +658,19 @@ API パラメータに以下を設定しました。
 }
 ```
 
-といった形で変数にしましょう。という話です。  
-変数化を行うことで、仮にインスタンス ID が変わったときでも、それぞれのブロックに設定してきた API パラメータを全て書き換えることなく、トリガー元の EventBridge で一元管理して対応できます。  
+といった形で変数にしましょう。というステップです。  
+「変数化」を行うことで、仮にインスタンス ID が変わったときでも、それぞれのブロックに設定してきた API パラメータを全て書き換えることなく、トリガー元の EventBridge で一元管理して対応できます。  
 
-### ASL の必然性
+### ASL の Intrinsic 関数
 
 上記コードに、`States.Array()` という関数的なものが初登場しました。  
 
 本ハンズオンでは、Workflow Studio を使った GUI の操作をメインに説明してきましたが、パラメータ入力は、`States.Array()` をはじめとした 「Intrinsic 関数」を使う必要があります。  
-そんなに数は多くないので、分からなくなったら以下ドキュメントを参照してください。
+ただ、関数の種類はそんなに数は多くありません。分からなくなったら以下ドキュメントを参照してください。
 
 [Intrinsic functions](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-intrinsic-functions.html)
+
+#### JSON データの受け渡し
 
 また、`InstanceIds` の後ろに `.$` があり、`INSTANCE_ID` の手前には `$.` があります。  
 これも「Intrinsic 関数」です。`$` に関しては、API パラメータの下部にもコメントが記載されています。
@@ -681,7 +683,7 @@ API パラメータに以下を設定しました。
 
 ![パラメータストア](./images/69_overview.png)
 
-### StopInstances
+#### StopInstances
 
 `StopInstances` のブロックで修正するのは 2 点です。  
 まず、API パラメータを以下のとおり変数化します。
@@ -703,7 +705,7 @@ API パラメータに以下を設定しました。
 
 ![パラメータストア](./images/73_output.png)
 
-###  DescribeInstances
+####  DescribeInstances
 
 `DescribeInstances` のブロックで行うことも 2 点で、`StopInstances` と同様です。
 
@@ -717,7 +719,7 @@ API パラメータに以下を設定しました。
 
 出力タブに移動して、`ResultPath を使用して元の入力を出力に追加 - 省略可能` のチェックボックスにチェックを入れて、`Combine original input with result` を `$.Output` にしてください。
 
-### Choice
+#### Choice
 
 1 つ目の `Choice` で変更するのは 1 点のみです。  
 Rule #1 の `Variable` を  
@@ -730,7 +732,7 @@ Rule #1 の `Variable` を
 
 に変更してください。
 
-### Choice (2)
+#### Choice (2)
 
 2 つ目の `Choice` も同様に Rule #1 の `Variable` を  
 
@@ -742,7 +744,7 @@ Rule #1 の `Variable` を
 
 に変更してください。
 
-### ModifyInstanceAttribute
+#### ModifyInstanceAttribute
 
 `ModifyInstanceAttribute` は 4 つとも、API パラメータに記載したインスタンス ID の行を以下に修正してください。  
 
@@ -752,7 +754,7 @@ Rule #1 の `Variable` を
 
 出力タブに移動して、`ResultPath を使用して元の入力を出力に追加 - 省略可能` のチェックボックスにチェックを入れて、`Combine original input with result` を `$.Output` にしてください。
 
-### StopInstances
+#### StopInstances
 
 `StopInstances` も API パラメータを以下に修正してください。
 
@@ -762,7 +764,7 @@ Rule #1 の `Variable` を
 }
 ```
 
-### テスト
+#### テスト
 
 これまではテストの際に渡す JSON データを変更せずに実行していましたが、今回は INSTANCE_ID の値を渡す必要があります。
 [ **新しい実行** ] ボタンをクリックして、[ **JSON フォーマット** ] に以下を入力してください。
@@ -777,8 +779,8 @@ Rule #1 の `Variable` を
 
 ### EventBrige
 
-うまく実行できたら、最後にイベントブリッジの設定を変更します。
-EventBridge のウインドウを閉じた方は、以下をクリックして開いてください。
+うまく実行できたでしょうか。最後に EventBridge の設定を変更します。  
+既に EventBridge のウインドウ (ブラウザのタブ) を閉じた方は、以下をクリックして開いてください。
 
 [https://ap-northeast-1.console.aws.amazon.com/events/home?region=ap-northeast-1#/rules](https://ap-northeast-1.console.aws.amazon.com/events/home?region=ap-northeast-1#/rules)
 
