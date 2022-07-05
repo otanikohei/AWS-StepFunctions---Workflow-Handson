@@ -33,10 +33,10 @@
 <p>そのワークフローを保存する箱をステートマシンと呼びます。<br> 以下は、ステートマシンとワークフローのイメージ図です。</p>
 <p class="image-container"><img alt="ステートマシン" src="img/19a676fa80bfa1a.png"></p>
 <h2 is-upgraded>Amazon States Language</h2>
-<p>各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を利用してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。</p>
+<p>各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を理解してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。</p>
 <p class="image-container"><img alt="Amazon States Language" src="img/7c665dcb67373d13.png"></p>
 <h2 is-upgraded>AWS Step Functions Workflow Studio</h2>
-<p>AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年にリリースされた GUI ベースのグラフィカルなコーディングツールです。 これまでコーディングが必須だったワークフロー構築が、ブロックごとに繋いで視覚的に作成できるようになりました。</p>
+<p>AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年にリリースされたステートマシンを構築するためのローコードのビジュアルツールです。<br> これまでコーディングが必須だったワークフロー構築が、ブロックごとに繋いで視覚的に作成できるようになりました。</p>
 <p class="image-container"><img alt="AWS Step Functions Workflow Studio" src="img/d38c40a758d67312.png"></p>
 <p>AWS News Blog:<br><a href="https://aws.amazon.com/jp/blogs/aws/new-aws-step-functions-workflow-studio-a-low-code-visual-tool-for-building-state-machines/" target="_blank">New – AWS Step Functions Workflow Studio – A Low-Code Visual Tool for Building State Machines</a></p>
 
@@ -44,14 +44,14 @@
       </google-codelab-step>
     
       <google-codelab-step label="ハンズオンの概要" duration="0">
-        <p>本ハンズオンでは「<strong>ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。</strong>」という簡単なツールの作成を通じて Step Functions と Workflow Studio の使い方を学ぶことができます。</p>
+        <p>本ハンズオンでは Workflow Studio で「<strong>ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。</strong>」という簡単なツールを作成します。<br> ツールの作成を通じて Workflow Studio の使い方とステートマシンの概要を学ぶことができます。</p>
 <p class="image-container"><img alt="処理イメージ" src="img/94c908452fcd27c9.png"></p>
 <h2 is-upgraded>準備</h2>
 <p>セクション 3 〜 4 では、手動でインスタンスファミリーを変更する手順を学びます。</p>
 <h2 is-upgraded>基本編</h2>
 <p>セクション 5 〜 10 では、インスタンスファミリーを変更する Step Functions を設定し、Workflow Studio の使い方や、ブロック間の値の渡し方などを学びます。</p>
 <h2 is-upgraded>応用編</h2>
-<p>セクション 11 以降では、EventBridge と連携して、指定時間にインスタンスファミリーを変更する方法を学びます。<br> EBS 最適化に対応している次世代インスタンスと、EBS 最適化に対応していない旧インスタンスの切り替えに必要な属性の変更方法や、フローを使った分岐もご理解いただけます。<br> また、各ステート間で受け渡す値を変数にして、EventBridge 側で一括変更する処理についても学ぶことができます。</p>
+<p>セクション 11 以降では、Amazon EventBridge と連携して、指定時間にインスタンスファミリーを変更する方法を学びます。<br><strong>EBS 最適化</strong> に対応している次世代インスタンスと、<strong>EBS 最適化</strong> に対応していない旧インスタンスの切り替えに必要な属性の変更方法や、フローを使った分岐もご理解いただけます。<br> また、各ステート間で受け渡す値を変数にして、EventBridge 側で一括変更する手法についても学ぶことができます。</p>
 <p>本ハンズオンを最後まで進めると JSON コーディングにステップを進めていただくための、基本的な使い方や概念が理解できるかと思います。</p>
 <aside class="warning"><p>EC2 インスタンスは起動している間に課金されます。ハンズオンが終了した後は必ず後片付けを実施ください。</p>
 </aside>
@@ -105,7 +105,7 @@
     
       <google-codelab-step label="ステートマシンを作成する" duration="0">
         <p>前セクションで、手動による EC2 の変更手順を確認しました。<br> 続いて、手動変更手順を Step Functions にて実装します。</p>
-<p>まず最初に、EC2 コンソールを開いたブラウザタブとは別のタブで以下 URL を開いてください。</p>
+<p>まず最初に、EC2 コンソールを開いたウインドウ (ブラウザのタブ) とは別で以下 URL を開いてください。</p>
 <p><a href="https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage" target="_blank">https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage</a></p>
 <p>Step Functions コンソールが開きます。<br> 初めて利用される場合は、以下のようなウェルカムページが表示されるかと思います。</p>
 <p>[ <strong>今すぐ始める</strong> ] ボタンをクリックしてください。</p>
@@ -159,7 +159,7 @@
         <p>前の手順で、Step Functions ステートマシンに <code>Amazon EC2 StopInstances</code> ステートを追加して、テスト実行しました。<br> しかし、ステートマシンに権限が不足して、実行エラーになりました。</p>
 <p>本ステップでは、IAM ポリシーを追加アタッチしてステートを実行できるようにします。</p>
 <h2 is-upgraded>IAM コンソールを開く</h2>
-<p>以下リンクから、3 つめのブラウザタブで IAM コンソールのロールページを開きます。</p>
+<p>以下リンクから、3 つめのウインドウ (ブラウザのタブ) で IAM コンソールのロールページを開きます。</p>
 <p><a href="https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles" target="_blank">https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles</a></p>
 <p>IAM ロールのページで、検索ボックスに <code>StepFunctions</code> まで入力して [ENTER] キーを押下すると、先ほどステートマシンを作成したときに自動生成されたロールが表示されます。</p>
 <p class="image-container"><img alt="IAM ロールの検索ボックス" src="img/ff371d9f094fb88a.png"></p>
@@ -191,7 +191,7 @@
 <p class="image-container"><img alt="新しい実行" src="img/89640e76166756ae.png"></p>
 <p>成功すると [ <strong>StartInstances</strong> ] のブロックが緑色になります。ブロックをクリックすると右側の [ <strong>入力と出力</strong> ] のタブに入力と出力の JSON コードがそれぞれ確認できます。</p>
 <p class="image-container"><img alt="入力と出力" src="img/629022dc98f5bd50.png"></p>
-<p>EC2 コンソールのタブに移動すると、インスタンスが起動しているのが確認できるかと思います。<br> [ <strong>停止済み</strong> ] のステータスから変わらない方は、下図の [更新] ボタンをクリックして確認してください。</p>
+<p>EC2 コンソールのウインドウ (ブラウザのタブ) に移動すると、インスタンスが起動しているのが確認できるかと思います。<br> [ <strong>停止済み</strong> ] のステータスから変わらない方は、下図の [更新] ボタンをクリックして確認してください。</p>
 <p class="image-container"><img alt="更新ボタン" src="img/b60276c1162f9cf6.png"></p>
 
 
@@ -454,17 +454,18 @@
   &#34;InstanceIds.$&#34;: &#34;States.Array($.INSTANCE_ID)&#34;
 }
 </code></pre>
-<p>といった形で変数にしましょう。という話です。<br> 変数化を行うことで、仮にインスタンス ID が変わったときでも、それぞれのブロックに設定してきた API パラメータを全て書き換えることなく、トリガー元の EventBridge で一元管理して対応できます。</p>
-<h2 is-upgraded>ASL の必然性</h2>
+<p>といった形で変数にしましょう。というステップです。<br> 「変数化」を行うことで、仮にインスタンス ID が変わったときでも、それぞれのブロックに設定してきた API パラメータを全て書き換えることなく、トリガー元の EventBridge で一元管理して対応できます。</p>
+<h2 is-upgraded>ASL の Intrinsic 関数</h2>
 <p>上記コードに、<code>States.Array()</code> という関数的なものが初登場しました。</p>
-<p>本ハンズオンでは、Workflow Studio を使った GUI の操作をメインに説明してきましたが、パラメータ入力は、<code>States.Array()</code> をはじめとした 「Intrinsic 関数」を使う必要があります。<br> そんなに数は多くないので、分からなくなったら以下ドキュメントを参照してください。</p>
+<p>本ハンズオンでは、Workflow Studio を使った GUI の操作をメインに説明してきましたが、パラメータ入力は、<code>States.Array()</code> をはじめとした 「Intrinsic 関数」を使う必要があります。<br> ただ、関数の種類はそんなに数は多くありません。分からなくなったら以下ドキュメントを参照してください。</p>
 <p><a href="https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-intrinsic-functions.html" target="_blank">Intrinsic functions</a></p>
+<h3 is-upgraded>JSON データの受け渡し</h3>
 <p>また、<code>InstanceIds</code> の後ろに <code>.$</code> があり、<code>INSTANCE_ID</code> の手前には <code>$.</code> があります。<br> これも「Intrinsic 関数」です。<code>$</code> に関しては、API パラメータの下部にもコメントが記載されています。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/1fd0e58f6915bd0b.png"></p>
 <h2 is-upgraded>ワークフロー 例</h2>
 <p>一つ前のステップにてご紹介したワークフローを使って、変数の書き換え方法をブロックごとに解説します。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/bd4f89bdc4ecf217.png"></p>
-<h2 is-upgraded>StopInstances</h2>
+<h3 is-upgraded>StopInstances</h3>
 <p><code>StopInstances</code> のブロックで修正するのは 2 点です。<br> まず、API パラメータを以下のとおり変数化します。</p>
 <pre><code language="language-json" class="language-json">{
   &#34;InstanceIds.$&#34;: &#34;States.Array($.INSTANCE_ID)&#34;
@@ -475,7 +476,7 @@
 <p class="image-container"><img alt="パラメータストア" src="img/2c20ded524f2ae4f.png"></p>
 <p>この <code>ResultPath を使用して元の入力を出力に追加</code> を行うと、通常の出力に加えて、入力のデータも次のステートに渡せるようになります。つまりどういうことかと言うと、以下のように <code>SopInstances</code> が 入力で受けた <code>INSTANCE_ID</code> を出力の上部に追加しているのが分かりますでしょうか。<br> こんな感じで、次のステートに情報をアドオンして渡せるのです。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/75ee809f3c26d57a.png"></p>
-<h2 is-upgraded>DescribeInstances</h2>
+<h3 is-upgraded>DescribeInstances</h3>
 <p><code>DescribeInstances</code> のブロックで行うことも 2 点で、<code>StopInstances</code> と同様です。</p>
 <p>まず、API パラメータは以下に修正してください。</p>
 <pre><code>{
@@ -483,30 +484,30 @@
 }
 </code></pre>
 <p>出力タブに移動して、<code>ResultPath を使用して元の入力を出力に追加 - 省略可能</code> のチェックボックスにチェックを入れて、<code>Combine original input with result</code> を <code>$.Output</code> にしてください。</p>
-<h2 is-upgraded>Choice</h2>
+<h3 is-upgraded>Choice</h3>
 <p>1 つ目の <code>Choice</code> で変更するのは 1 点のみです。<br> Rule #1 の <code>Variable</code> を</p>
 <p><code>$.Reservations[0].Instances[0].State.Name</code></p>
 <p>から、</p>
 <p><code>$.Output.Reservations[0].Instances[0].State.Name</code></p>
 <p>に変更してください。</p>
-<h2 is-upgraded>Choice (2)</h2>
+<h3 is-upgraded>Choice (2)</h3>
 <p>2 つ目の <code>Choice</code> も同様に Rule #1 の <code>Variable</code> を</p>
 <p><code>$.Reservations[0].Instances[0].InstanceType</code></p>
 <p>から</p>
 <p><code>$.Output.Reservations[0].Instances[0].InstanceType</code></p>
 <p>に変更してください。</p>
-<h2 is-upgraded>ModifyInstanceAttribute</h2>
+<h3 is-upgraded>ModifyInstanceAttribute</h3>
 <p><code>ModifyInstanceAttribute</code> は 4 つとも、API パラメータに記載したインスタンス ID の行を以下に修正してください。</p>
 <pre><code language="language-json" class="language-json">  &#34;InstanceId.$&#34;: &#34;$.INSTANCE_ID&#34;,
 </code></pre>
 <p>出力タブに移動して、<code>ResultPath を使用して元の入力を出力に追加 - 省略可能</code> のチェックボックスにチェックを入れて、<code>Combine original input with result</code> を <code>$.Output</code> にしてください。</p>
-<h2 is-upgraded>StopInstances</h2>
+<h3 is-upgraded>StopInstances</h3>
 <p><code>StopInstances</code> も API パラメータを以下に修正してください。</p>
 <pre><code>{
   &#34;InstanceIds.$&#34;: &#34;States.Array($.INSTANCE_ID)&#34;
 }
 </code></pre>
-<h2 is-upgraded>テスト</h2>
+<h3 is-upgraded>テスト</h3>
 <p>これまではテストの際に渡す JSON データを変更せずに実行していましたが、今回は INSTANCE_ID の値を渡す必要があります。 [ <strong>新しい実行</strong> ] ボタンをクリックして、[ <strong>JSON フォーマット</strong> ] に以下を入力してください。</p>
 <pre><code>{
     &#34;INSTANCE_ID&#34;: &#34;＜インスタンス ID＞&#34;
@@ -515,7 +516,7 @@
 <aside class="special"><p>＜インスタンス ID＞ はインスタンスの ID に書き換えてください。</p>
 </aside>
 <h2 is-upgraded>EventBrige</h2>
-<p>うまく実行できたら、最後にイベントブリッジの設定を変更します。 EventBridge のウインドウを閉じた方は、以下をクリックして開いてください。</p>
+<p>うまく実行できたでしょうか。最後に EventBridge の設定を変更します。<br> 既に EventBridge のウインドウ (ブラウザのタブ) を閉じた方は、以下をクリックして開いてください。</p>
 <p><a href="https://ap-northeast-1.console.aws.amazon.com/events/home?region=ap-northeast-1#/rules" target="_blank">https://ap-northeast-1.console.aws.amazon.com/events/home?region=ap-northeast-1#/rules</a></p>
 <p>先の手順で無効化したイベントを開き、下部にある [ <strong>ターゲット</strong> ] タブの [ <strong>編集</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/3cdc8711e0a3c2e6.png"></p>
