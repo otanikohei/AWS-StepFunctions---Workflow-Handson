@@ -25,7 +25,7 @@
                   id="docs"
                   title="AWS Step Functions Workflow Studio を使った入門ハンズオン"
                   environment="web"
-                  feedback-link="https://github.com/otanikohei/AWS-StepFunctions—Workflow-Handson">
+                  feedback-link="https://github.com/otanikohei/AWS-StepFunctions—Workflow-Handson/issues">
     
       <google-codelab-step label="はじめに" duration="3">
         <p class="image-container"><img alt="インスタンスファミリーの変更" src="img/80a47c0e145ed8b0.gif"></p>
@@ -234,7 +234,7 @@
 <aside class="warning"><p>t2.micro は t3.nano から変更すると、EBS ボリューム最適化の関係でエラーになるため m6i.large にしています。</p>
 </aside>
 <p>以下のようなイメージです。</p>
-<p class="image-container"><img alt="ModifyInstanceAttribute の挿入" src="img/44b5d6ab8d1aa273.png"></p>
+<p class="image-container"><img alt="ModifyInstanceAttribute の挿入" src="img/d518566eac38cc53.png"></p>
 <p>これで、インスタンスファミリーを「m6i.large」に変更できるようになりました。</p>
 <h2 is-upgraded>インスタンスが停止しているか確認する</h2>
 <p>インスタンスの停止状態は <code>DescribeInstances</code> を利用します。<br> アクションから、[ <strong>Amazon EC2 DescribeInstances</strong> ] をドラッグして、[ <strong>StopInstances</strong> ] と [ <strong>ModifyInstanceAttribute</strong> ] の間に挿入します。　　</p>
@@ -345,7 +345,7 @@
 <p class="image-container"><img alt="パラメータストア" src="img/14b07a3d87f0e6a4.png"></p>
 <p>パンくずリストから、作成したステート名をクリックして、[ <strong>アクション ▼</strong> ] から [ <strong>EventBridge (CloudWatch イベント) ルールを作成</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/261c1af5b252b2bc.png"></p>
-<p>EventBridge が別ウインドウで開きますので、[ <strong>名前</strong> ] を設定してルールタイプを [ <strong>スケジュール</strong> ] に変更します。 [ <strong>EventBridge Scheduler で続行</strong> ] というボタンがオレンジでアピールしていますが、Step Functions の操作を学習しているので、[ <strong>続行してルールを作成する</strong> ] ボタンをクリックの方で進めたいと思います。</p>
+<p>EventBridge が別ウインドウで開きますので、[ <strong>名前</strong> ] を設定してルールタイプを [ <strong>スケジュール</strong> ] に変更します。 [ <strong>EventBridge Scheduler で続行</strong> ] というボタンがオレンジでアピールしていますが、Step Functions の操作の習得が目的なので、[ <strong>続行してルールを作成する</strong> ] ボタンをクリックの方で進めたいと思います。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/a0bdc944eb1bf8b4.png"></p>
 <p>スケジュールパターンはひとまず [ <strong>○ 通常レートで実行されるスケジュール(10分ごとなど)。</strong> ] を選択して、[ <strong>レート式</strong> ] は 5 分にしてみましょう。<br> [ <strong>次へ</strong> ] ボタンをクリックしてください。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/345477035a006272.png"></p>
