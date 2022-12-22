@@ -1,14 +1,16 @@
+author: 尾谷 紘平
 summary: AWS Step Functions Workflow Studio を使った入門ハンズオン
 id: docs
-categories: AWS Step Functions Workflow Studio
+categories: codelab,markdown
 environments: Web
-status: Draft
+status: Published
 feedback link: https://github.com/otanikohei/AWS-StepFunctions---Workflow-Handson
+analytics: G-5E9NK9J1DK
 
 # AWS Step Functions Workflow Studio を使った入門ハンズオン
 
 ## はじめに
-Duration: 0:05:00
+Duration: 0:02:30
 
 ![インスタンスファミリーの変更](./images/00_0_top_image.gif)
 
@@ -21,6 +23,7 @@ Step Functions は AWS のマネージドサービスで、ワークフローに
 ![ステートマシン](./images/00_3_state_machine_state.png)
 
 ### Amazon States Language
+Duration: 0:03:00
 
 各ワークフローは、JSON ベースの Amazon States Language (以下、ASL) で記述していきます。現在は YAML での記述にも対応しましたが、ASL を理解してコーディングするのは、初心者には敷居が高く習熟する時間も必要です。  
 
@@ -36,6 +39,7 @@ AWS Step Functions Workflow Studio (以下、Workflow Studio) は、2021 年に�
 [New – AWS Step Functions Workflow Studio – A Low-Code Visual Tool for Building State Machines](https://aws.amazon.com/jp/blogs/aws/new-aws-step-functions-workflow-studio-a-low-code-visual-tool-for-building-state-machines/)
 
 ## ハンズオンの概要
+Duration: 0:02:00
 
 本ハンズオンでは Workflow Studio で「**ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。**」という簡単なツールを作成します。  
 ツールの作成を通じて Workflow Studio の使い方とステートマシンの概要を学ぶことができます。  
@@ -68,6 +72,7 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 まず、この手順を手動操作してみます。  
 
 ## 手動で EC2 インスタンスを起動
+Duration: 0:02:30
 
 以下、URL をクリックして EC2 コンソールを開きます。  
 
@@ -97,6 +102,11 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 <aside class="positive">このハンズオンは EC2 インスタンスのログイン操作が目的ではいため、必要最低限の設定にてインスタンスを起動しています。</aside>
 
 ## 手動でインスタンスファミリーを変更
+Duration: 0:03:00
+
+以下、インスタンスの一覧画面にアクセスしてください。
+
+[https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Instances](https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Instances)
 
 インスタンスのステータスが [ **実行中** ] になったら、
 
@@ -111,6 +121,8 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 
 そこで、インスタンスを停止してみましょう。  
 [ **インスタンスの状態** ] から [ **インスタンスを停止** ] を選択してください。
+
+確認メッセージが表示されるので、[停止] ボタンをクリックしてください。
 
 ![インスタンスファミリーを停止](./images/11_instance_stop.png)
 
@@ -135,8 +147,9 @@ Amazon EC2 インスタンスは、汎用 **m 系ファミリー** や、メモ�
 この状態でインスタンスを起動すると EC2 インスタンスは t3.micro で上がってきますが、一旦停止のまま起動せずに置いておいてください。
 
 ## ステートマシンを作成する
+Duration: 0:06:00
 
-前セクションで、手動による EC2 の変更手順を確認しました。  
+前セクションで、手動による EC2 のインスタンスファミリーの変更手順を確認しました。  
 続いて、手動変更手順を Step Functions にて実装します。  
 
 まず最初に、EC2 コンソールを開いたウインドウ (ブラウザのタブ) とは別で以下 URL を開いてください。
@@ -230,11 +243,12 @@ Step Functions コンソールが開きます。
 権限エラーを解消するため、IAM コンソールにてポリシーをアタッチします。
 
 ## 実行ポリシーをアタッチする
+Duration: 0:03:00
 
-前の手順で、Step Functions ステートマシンに `Amazon EC2 StopInstances` ステートを追加して、テスト実行しました。  
+前の手順で、Step Functions ステートマシンに `Amazon EC2 StartInstances` ステートを追加して、テスト実行しました。  
 しかし、ステートマシンに権限が不足して、実行エラーになりました。
 
-本ステップでは、IAM ポリシーを追加アタッチしてステートを実行できるようにします。
+本ステップでは、IAM ポリシーを追加 (アタッチ) してステートを実行できるようにします。
 
 ### IAM コンソールを開く
 
@@ -270,6 +284,7 @@ IAM ロールのページで、検索ボックスに `StepFunctions` まで入�
 - EC2 DescribeInstances
 
 ## ステートの再実行
+Duration: 0:01:30
 
 IAM ロールの設定ができたので、再度ステートを実行してみましょう。  
 [ **新しい実行** ] ボタンをクリックします。
@@ -286,6 +301,7 @@ EC2 コンソールのウインドウ (ブラウザのタブ) に移動すると
 ![更新ボタン](./images/32_ec2_running.png)
 
 ## アクションの追加
+Duration: 0:05:00
 
 EC2 インスタンスは Step Functions から起動させることができましたでしょうか。
 
@@ -314,7 +330,7 @@ EC2 インスタンスは Step Functions から起動させることができま
 
 これで、インスタンスを止めれるようになりました。
 
-<aside class="positive">API パラメータに入力する JSON は StopInstances に入力したものと同じです。</aside>
+<aside class="positive">API パラメータに入力する JSON は StartInstances に入力したものと同じです。</aside>
 
 ### インスタンスファミリーを変更する
 
@@ -368,6 +384,7 @@ EC2 インスタンスは Step Functions から起動させることができま
 ![ステートの再実行](./images/44_describe_instances_api_parameter.png)
 
 ## インスタンスの停止を待つ
+Duration: 0:06:00
 
 一通りのアクションは追加できましたが、手動でインスタンスファミリーを変更した際のアクションをもっと細分化すると、  
 
@@ -456,6 +473,7 @@ Step Functions の画面に戻るので、[ **保存** ] ボタンをクリッ�
 ![IAM ロール確認メッセージ](./images/50_confirm.png)
 
 ## テスト
+Duration: 0:02:00
 
 準備が整いましたので、テスト実行してみてください。
 
@@ -478,6 +496,7 @@ EC2 コンソールから、インスタンスが m6i.large で起動したこ�
 ここで終了する方は、後片付けのセッションまでジャンプしてください。
 
 ## アドバンスドステップ
+Duration: 0:01:00
 
 うまくインスタンスファミリーは変更できたでしょうか。  
 概要のみ記載しておきますので、余力のある方にトライいただければと思います。  
@@ -489,6 +508,7 @@ EC2 コンソールから、インスタンスが m6i.large で起動したこ�
 ------
 
 ## 1. EventBridge を設定して、指定した時刻にインスタンスファミリーを変更する
+Duration: 0:08:00
 
 それでは、作成したステートマシンを指定した時刻に起動させてみましょう。  
 
@@ -500,7 +520,8 @@ EC2 コンソールから、インスタンスが m6i.large で起動したこ�
 
 ![パラメータストア](./images/58_create_eventbridge_rule.png)
 
-EventBridge が別ウインドウで開きますので、[ **名前** ] を設定してルールタイプを [ **スケジュール** ] に変更し、[ **次へ** ] ボタンをクリックします。
+EventBridge が別ウインドウで開きますので、[ **名前** ] を設定してルールタイプを [ **スケジュール** ] に変更します。
+[ **EventBridge Scheduler で続行** ] というボタンがオレンジでアピールしていますが、Step Functions の操作の習得が目的なので、[ **続行してルールを作成する** ] ボタンをクリックの方で進めたいと思います。
 
 ![パラメータストア](./images/59_define_eventbridge_rule.png)
 
@@ -542,22 +563,23 @@ EC2 コンソールに移動し、更新ボタンをクリックすると
 
 ![パラメータストア](./images/65_change_ec2_instance.png)
 
-## 2. Choice を利用して t3.nano なら t2.micro に、t2.micro なら t3.nano に変更する
+## 2. Choice を利用して t3.nano なら t2.nano に、t2.nano なら t3.nano に変更する
+Duration: 0:12:00
 
 ここまでの手順で、指定した時間にインスタンスタイプが変更できるようになりました。  
 
-次は、ステートマシンを直接修正する必要がないように、現在のインスタンスサイズを確認して、t3.micro なら t2.micro に、t2.micro なら t3.micro に、トグル的に変更できるようにしたいと思います。  
+次は、ステートマシンを直接修正する必要がないように、現在のインスタンスサイズを確認して、t3.nano なら t2.nano に、t2.nano なら t3.nano に、トグル的に変更できるようにしたいと思います。  
 
-### t2.micro は EBS 最適化に対応していない
+### t2.nano は EBS 最適化に対応していない
 
-t2.micro は旧世代のインスタンスで、EBS 最適化に対応していません。  
+t2 系インスタンスは旧世代のインスタンスで、EBS 最適化に対応していません。  
 手動でインスタンスタイプを変更しようとすると、EBS に最適化のチェックボックスがグレーアウトしていますが、最適化に対応していないと表示されます。
 
 ![パラメータストア](./images/66_t2.micro_no_ebs_optimized_support.png)
 
-先の手順で少し触れましたが、Step Functions だと、この、「EBS 最適化」の状態のまま t2.micro で起動しようとするため、`StartInstances` のブロックで起動に失敗することがあります。  
+先の手順で少し触れましたが、Step Functions だと、この、「EBS 最適化」の状態のまま t2.nano で起動しようとするため、`StartInstances` のブロックで起動に失敗することがあります。  
 
-具体的には「EBS 最適化」が有効になって稼働しているインスタンスを Step Functions で、API パラメータで `t2.micro` を指定して実行すると、`StartInstances` のブロックでエラーになります。  
+具体的には「EBS 最適化」が有効になって稼働しているインスタンスを Step Functions で、API パラメータで `t2.nano` を指定して実行すると、`StartInstances` のブロックでエラーになります。  
 
 ![パラメータストア](./images/67_t2micro_ebs_boot_fail.png)
 
@@ -572,16 +594,16 @@ t2.micro は旧世代のインスタンスで、EBS 最適化に対応してい�
 
 ### Choice (1)
 
-このブロックでは、現在のインスタンスが t2.micro かそうでないかを判定しています。  
+このブロックでは、現在のインスタンスが t2.nano かそうでないかを判定しています。  
 Rule #1 には以下を設定しました。
 
 |Not|Variable|Operator|Value|
 |---|---|---|---|
-|空欄|$.Reservations[0].Instances[0].InstanceType|match string|t2.micro|
+|空欄|$.Reservations[0].Instances[0].InstanceType|match string|t2.nano|
 
 ### ModifyInstanceAttribute
 
-こちらは現在のインスタンスタイプが `t2.micro` の場合の分岐です。  
+こちらは現在のインスタンスタイプが `t2.nano` の場合の分岐です。  
 1 つ目の ModifyInstanceAttribute ではインスタンスタイプを `t3.nano` に設定します。  
 API パラメータに以下を設定しました。
 
@@ -637,6 +659,7 @@ API パラメータに以下を設定しました。
 ![パラメータストア](./images/70_workflow.gif)
 
 ## 3. API パラメータを変数化して EventBridge のパラメータでインスタンスタイプを変更する
+Duration: 0:18:00
 
 これが本ハンズオンの最後のステップになります。  
 本ステップでは、API パラメータに入力してきた値を一部変数にして、EventBridge からパラメータを渡せるようにします。  
@@ -700,7 +723,7 @@ API パラメータに以下を設定しました。
 
 ![パラメータストア](./images/72_Combine_original_input_with_result.png)
 
-この `ResultPath を使用して元の入力を出力に追加` を行うと、通常の出力に加えて、入力のデータも次のステートに渡せるようになります。つまりどういうことかと言うと、以下のように `SopInstances` が 入力で受けた `INSTANCE_ID` を出力の上部に追加しているのが分かりますでしょうか。  
+この `ResultPath を使用して元の入力を出力に追加` を行うと、通常の出力に加えて、入力のデータも次のステートに渡せるようになります。つまりどういうことかと言うと、以下のように `StopInstances` が 入力で受けた `INSTANCE_ID` を出力の上部に追加しているのが分かりますでしょうか。  
 こんな感じで、次のステートに情報をアドオンして渡せるのです。
 
 ![パラメータストア](./images/73_output.png)
@@ -803,6 +826,7 @@ Rule #1 の `Variable` を
 ![パラメータストア](./images/75_const.png)
 
 ## 後片付け
+Duration: 0:05:00
 
 みなさんお疲れ様でした。ハンズオン終了後も継続して従量課金されないよう、本ハンズオンで作成したリソースは削除してください。  
 継続して課金が行われるケースとしては、以下が考えられます。  

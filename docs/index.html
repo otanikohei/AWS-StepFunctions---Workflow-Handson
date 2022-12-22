@@ -9,7 +9,7 @@
   <title>AWS Step Functions Workflow Studio を使った入門ハンズオン</title>
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
   <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
   <style>
     .success {
       color: #1e8e3e;
@@ -27,7 +27,7 @@
                   environment="web"
                   feedback-link="https://github.com/otanikohei/AWS-StepFunctions—Workflow-Handson">
     
-      <google-codelab-step label="はじめに" duration="5">
+      <google-codelab-step label="はじめに" duration="3">
         <p class="image-container"><img alt="インスタンスファミリーの変更" src="img/80a47c0e145ed8b0.gif"></p>
 <p>みなさんは、AWS Step Functions (以下、Step Functions) を利用したことがありますか？<br> Step Functions は AWS のマネージドサービスで、ワークフローに AWS Lambda や Amazon Simple Nortification Service などのマイクロサービス・コンポーネントを疎結合して実行できるサービスです。</p>
 <p>そのワークフローを保存する箱をステートマシンと呼びます。<br> 以下は、ステートマシンとワークフローのイメージ図です。</p>
@@ -43,7 +43,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="ハンズオンの概要" duration="0">
+      <google-codelab-step label="ハンズオンの概要" duration="2">
         <p>本ハンズオンでは Workflow Studio で「<strong>ある特定の時間帯だけ EC2 インスタンスのインスタンスファミリーを変更する。</strong>」という簡単なツールを作成します。<br> ツールの作成を通じて Workflow Studio の使い方とステートマシンの概要を学ぶことができます。</p>
 <p class="image-container"><img alt="処理イメージ" src="img/94c908452fcd27c9.png"></p>
 <h2 is-upgraded>準備</h2>
@@ -63,7 +63,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="手動で EC2 インスタンスを起動" duration="0">
+      <google-codelab-step label="手動で EC2 インスタンスを起動" duration="3">
         <p>以下、URL をクリックして EC2 コンソールを開きます。</p>
 <p><a href="https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Home:" target="_blank">https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Home:</a></p>
 <p>画面遷移したら、オレンジ色の [ <strong>インスタンスを起動 ▼</strong> ] ボタンをクリックして、ドロップダウンメニューから [ <strong>インスタンスを起動</strong> ] を選択してください。</p>
@@ -82,13 +82,16 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="手動でインスタンスファミリーを変更" duration="0">
-        <p>インスタンスのステータスが [ <strong>実行中</strong> ] になったら、</p>
+      <google-codelab-step label="手動でインスタンスファミリーを変更" duration="3">
+        <p>以下、インスタンスの一覧画面にアクセスしてください。</p>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Instances" target="_blank">https://ap-northeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-1#Instances</a></p>
+<p>インスタンスのステータスが [ <strong>実行中</strong> ] になったら、</p>
 <p class="image-container"><img alt="インスタンスファミリーを変更がグレーアウト" src="img/a25beb2730d6de14.png"></p>
 <p>インスタンスタイプの変更を試してみます。<br> インスタンスのチェックボックスにチェックを入れて、[ <strong>アクション</strong> ] から [ <strong>インスタンスの設定</strong> ] と進めてください。</p>
 <p>すると、[ <strong>インスタンスタイプを変更</strong> ] がグレーアウトしています。</p>
 <p class="image-container"><img alt="インスタンスファミリーを変更がグレーアウト" src="img/859f6c229df91e57.png"></p>
 <p>そこで、インスタンスを停止してみましょう。<br> [ <strong>インスタンスの状態</strong> ] から [ <strong>インスタンスを停止</strong> ] を選択してください。</p>
+<p>確認メッセージが表示されるので、[停止] ボタンをクリックしてください。</p>
 <p class="image-container"><img alt="インスタンスファミリーを停止" src="img/8c5238eeb5733010.png"></p>
 <p>インスタンスの状態が [ <strong>停止中</strong> ] から</p>
 <p class="image-container"><img alt="停止中" src="img/18f0b853282bec5f.png"></p>
@@ -103,8 +106,8 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="ステートマシンを作成する" duration="0">
-        <p>前セクションで、手動による EC2 の変更手順を確認しました。<br> 続いて、手動変更手順を Step Functions にて実装します。</p>
+      <google-codelab-step label="ステートマシンを作成する" duration="6">
+        <p>前セクションで、手動による EC2 のインスタンスファミリーの変更手順を確認しました。<br> 続いて、手動変更手順を Step Functions にて実装します。</p>
 <p>まず最初に、EC2 コンソールを開いたウインドウ (ブラウザのタブ) とは別で以下 URL を開いてください。</p>
 <p><a href="https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage" target="_blank">https://ap-northeast-1.console.aws.amazon.com/states/home?region=ap-northeast-1#/homepage</a></p>
 <p>Step Functions コンソールが開きます。<br> 初めて利用される場合は、以下のようなウェルカムページが表示されるかと思います。</p>
@@ -149,15 +152,15 @@
 <p>確認メッセージが表示されたら、再度オレンジの [ <strong>実行の開始</strong> ]ボタンをクリックします。</p>
 <p class="image-container"><img alt="確認メッセージ" src="img/22c7ebcac3c5aa57.png"></p>
 <p>すると、エラーになります。エラーになった [ <strong>States.TaskFailed ステップ: StartInstances</strong> ] の [ <strong>原因 ▶︎</strong> ] をクリックすると、権限エラーが発生していたことがわかります。</p>
-<p class="image-container"><img alt="例外タブ" src="img/526399ab655bbb67.png"></p>
+<p class="image-container"><img alt="例外タブ" src="img/114ff0ef41c512c5.png"></p>
 <p>権限エラーを解消するため、IAM コンソールにてポリシーをアタッチします。</p>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="実行ポリシーをアタッチする" duration="0">
-        <p>前の手順で、Step Functions ステートマシンに <code>Amazon EC2 StopInstances</code> ステートを追加して、テスト実行しました。<br> しかし、ステートマシンに権限が不足して、実行エラーになりました。</p>
-<p>本ステップでは、IAM ポリシーを追加アタッチしてステートを実行できるようにします。</p>
+      <google-codelab-step label="実行ポリシーをアタッチする" duration="3">
+        <p>前の手順で、Step Functions ステートマシンに <code>Amazon EC2 StartInstances</code> ステートを追加して、テスト実行しました。<br> しかし、ステートマシンに権限が不足して、実行エラーになりました。</p>
+<p>本ステップでは、IAM ポリシーを追加 (アタッチ) してステートを実行できるようにします。</p>
 <h2 is-upgraded>IAM コンソールを開く</h2>
 <p>以下リンクから、3 つめのウインドウ (ブラウザのタブ) で IAM コンソールのロールページを開きます。</p>
 <p><a href="https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles" target="_blank">https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/roles</a></p>
@@ -186,7 +189,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="ステートの再実行" duration="0">
+      <google-codelab-step label="ステートの再実行" duration="2">
         <p>IAM ロールの設定ができたので、再度ステートを実行してみましょう。<br> [ <strong>新しい実行</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img alt="新しい実行" src="img/89640e76166756ae.png"></p>
 <p>成功すると [ <strong>StartInstances</strong> ] のブロックが緑色になります。ブロックをクリックすると右側の [ <strong>入力と出力</strong> ] のタブに入力と出力の JSON コードがそれぞれ確認できます。</p>
@@ -197,7 +200,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="アクションの追加" duration="0">
+      <google-codelab-step label="アクションの追加" duration="5">
         <p>EC2 インスタンスは Step Functions から起動させることができましたでしょうか。</p>
 <p>ここから更にアクションブロックを追加していきます。<br> インスタンスファミリーを変更するフローは以下の通りでした。</p>
 <p>残りのアクションを、上から順番に入れていきましょう。</p>
@@ -211,7 +214,7 @@
 <p>[ <strong>API パラメータ</strong> ] にインスタンス ID を入力します。</p>
 <p class="image-container"><img alt="API パラメータの入力" src="img/751e48da21a87943.png"></p>
 <p>これで、インスタンスを止めれるようになりました。</p>
-<aside class="special"><p>API パラメータに入力する JSON は StopInstances に入力したものと同じです。</p>
+<aside class="special"><p>API パラメータに入力する JSON は StartInstances に入力したものと同じです。</p>
 </aside>
 <h2 is-upgraded>インスタンスファミリーを変更する</h2>
 <p>インスタンスファミリーを変更するには、<code>ModifyInstanceAttribute</code> を利用します。</p>
@@ -250,7 +253,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="インスタンスの停止を待つ" duration="0">
+      <google-codelab-step label="インスタンスの停止を待つ" duration="6">
         <p>一通りのアクションは追加できましたが、手動でインスタンスファミリーを変更した際のアクションをもっと細分化すると、</p>
 <ul>
 <li>インスタンスが停止しているか確認する</li>
@@ -310,7 +313,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="テスト" duration="0">
+      <google-codelab-step label="テスト" duration="2">
         <p>準備が整いましたので、テスト実行してみてください。</p>
 <p class="image-container"><img alt="実行の開始" src="img/3ecb5305db4b2036.png"></p>
 <p>ステートが進んでいくのがお分かりいただけるかと思います。<br> 水色が実行されているステートで、緑が成功したステートになります。</p>
@@ -325,7 +328,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="アドバンスドステップ" duration="0">
+      <google-codelab-step label="アドバンスドステップ" duration="1">
         <p>うまくインスタンスファミリーは変更できたでしょうか。<br> 概要のみ記載しておきますので、余力のある方にトライいただければと思います。</p>
 <ol type="1">
 <li>EventBridge を設定して、指定した時刻にインスタンスファミリーを変更する</li>
@@ -336,14 +339,14 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="1. EventBridge を設定して、指定した時刻にインスタンスファミリーを変更する" duration="0">
+      <google-codelab-step label="1. EventBridge を設定して、指定した時刻にインスタンスファミリーを変更する" duration="8">
         <p>それでは、作成したステートマシンを指定した時刻に起動させてみましょう。</p>
 <p>現在、m6i.large で起動している方は、(停止していても大丈夫です。) ステートマシンの [ <strong>ModifyInstanceAttribute</strong> ] を編集して「t3.micro」にしてください。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/14b07a3d87f0e6a4.png"></p>
 <p>パンくずリストから、作成したステート名をクリックして、[ <strong>アクション ▼</strong> ] から [ <strong>EventBridge (CloudWatch イベント) ルールを作成</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/261c1af5b252b2bc.png"></p>
-<p>EventBridge が別ウインドウで開きますので、[ <strong>名前</strong> ] を設定してルールタイプを [ <strong>スケジュール</strong> ] に変更し、[ <strong>次へ</strong> ] ボタンをクリックします。</p>
-<p class="image-container"><img alt="パラメータストア" src="img/ca91b8ca68eb5e1a.png"></p>
+<p>EventBridge が別ウインドウで開きますので、[ <strong>名前</strong> ] を設定してルールタイプを [ <strong>スケジュール</strong> ] に変更します。 [ <strong>EventBridge Scheduler で続行</strong> ] というボタンがオレンジでアピールしていますが、Step Functions の操作を学習しているので、[ <strong>続行してルールを作成する</strong> ] ボタンをクリックの方で進めたいと思います。</p>
+<p class="image-container"><img alt="パラメータストア" src="img/a0bdc944eb1bf8b4.png"></p>
 <p>スケジュールパターンはひとまず [ <strong>○ 通常レートで実行されるスケジュール(10分ごとなど)。</strong> ] を選択して、[ <strong>レート式</strong> ] は 5 分にしてみましょう。<br> [ <strong>次へ</strong> ] ボタンをクリックしてください。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/345477035a006272.png"></p>
 <p>[ <strong>ターゲットを選択する</strong> ] 画面に遷移するので、以下を設定してください。</p>
@@ -376,21 +379,21 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="2. Choice を利用して t3.nano なら t2.micro に、t2.micro なら t3.nano に変更する" duration="0">
+      <google-codelab-step label="2. Choice を利用して t3.nano なら t2.nano に、t2.nano なら t3.nano に変更する" duration="12">
         <p>ここまでの手順で、指定した時間にインスタンスタイプが変更できるようになりました。</p>
-<p>次は、ステートマシンを直接修正する必要がないように、現在のインスタンスサイズを確認して、t3.micro なら t2.micro に、t2.micro なら t3.micro に、トグル的に変更できるようにしたいと思います。</p>
-<h2 is-upgraded>t2.micro は EBS 最適化に対応していない</h2>
-<p>t2.micro は旧世代のインスタンスで、EBS 最適化に対応していません。<br> 手動でインスタンスタイプを変更しようとすると、EBS に最適化のチェックボックスがグレーアウトしていますが、最適化に対応していないと表示されます。</p>
+<p>次は、ステートマシンを直接修正する必要がないように、現在のインスタンスサイズを確認して、t3.nano なら t2.nano に、t2.nano なら t3.nano に、トグル的に変更できるようにしたいと思います。</p>
+<h2 is-upgraded>t2.nano は EBS 最適化に対応していない</h2>
+<p>t2 系インスタンスは旧世代のインスタンスで、EBS 最適化に対応していません。<br> 手動でインスタンスタイプを変更しようとすると、EBS に最適化のチェックボックスがグレーアウトしていますが、最適化に対応していないと表示されます。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/9e712e091586ad46.png"></p>
-<p>先の手順で少し触れましたが、Step Functions だと、この、「EBS 最適化」の状態のまま t2.micro で起動しようとするため、<code>StartInstances</code> のブロックで起動に失敗することがあります。</p>
-<p>具体的には「EBS 最適化」が有効になって稼働しているインスタンスを Step Functions で、API パラメータで <code>t2.micro</code> を指定して実行すると、<code>StartInstances</code> のブロックでエラーになります。</p>
+<p>先の手順で少し触れましたが、Step Functions だと、この、「EBS 最適化」の状態のまま t2.nano で起動しようとするため、<code>StartInstances</code> のブロックで起動に失敗することがあります。</p>
+<p>具体的には「EBS 最適化」が有効になって稼働しているインスタンスを Step Functions で、API パラメータで <code>t2.nano</code> を指定して実行すると、<code>StartInstances</code> のブロックでエラーになります。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/e53746aa4a71f5b.png"></p>
 <h2 is-upgraded>ワークフロー 例</h2>
 <p>組み方はいろいろ考えられますが、サンプルをご用意しました。<br> 全体像は以下の通りです。</p>
 <p>ブロックごとに解説していきます。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/bd4f89bdc4ecf217.png"></p>
 <h2 is-upgraded>Choice (1)</h2>
-<p>このブロックでは、現在のインスタンスが t2.micro かそうでないかを判定しています。<br> Rule #1 には以下を設定しました。</p>
+<p>このブロックでは、現在のインスタンスが t2.nano かそうでないかを判定しています。<br> Rule #1 には以下を設定しました。</p>
 <table>
 <tr><td colspan="1" rowspan="1"><p>Not</p>
 </td><td colspan="1" rowspan="1"><p>Variable</p>
@@ -400,11 +403,11 @@
 <tr><td colspan="1" rowspan="1"><p>空欄</p>
 </td><td colspan="1" rowspan="1"><p>$.Reservations[0].Instances[0].InstanceType</p>
 </td><td colspan="1" rowspan="1"><p>match string</p>
-</td><td colspan="1" rowspan="1"><p>t2.micro</p>
+</td><td colspan="1" rowspan="1"><p>t2.nano</p>
 </td></tr>
 </table>
 <h2 is-upgraded>ModifyInstanceAttribute</h2>
-<p>こちらは現在のインスタンスタイプが <code>t2.micro</code> の場合の分岐です。<br> 1 つ目の ModifyInstanceAttribute ではインスタンスタイプを <code>t3.nano</code> に設定します。<br> API パラメータに以下を設定しました。</p>
+<p>こちらは現在のインスタンスタイプが <code>t2.nano</code> の場合の分岐です。<br> 1 つ目の ModifyInstanceAttribute ではインスタンスタイプを <code>t3.nano</code> に設定します。<br> API パラメータに以下を設定しました。</p>
 <pre><code language="language-json" class="language-json">{
   &#34;InstanceId&#34;: &#34;＜インスタンス ID＞&#34;,
   &#34;Attribute&#34;: &#34;instanceType&#34;,
@@ -441,7 +444,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="3. API パラメータを変数化して EventBridge のパラメータでインスタンスタイプを変更する" duration="0">
+      <google-codelab-step label="3. API パラメータを変数化して EventBridge のパラメータでインスタンスタイプを変更する" duration="18">
         <p>これが本ハンズオンの最後のステップになります。<br> 本ステップでは、API パラメータに入力してきた値を一部変数にして、EventBridge からパラメータを渡せるようにします。<br> 具体的に記載しますと、</p>
 <pre><code language="language-json" class="language-json">{
   &#34;InstanceIds&#34;: [
@@ -474,7 +477,7 @@
 <p>次に、出力タブに移動して、<code>ResultPath を使用して元の入力を出力に追加 - 省略可能</code> のチェックボックスにチェックを入れて、<code>Combine original input with result</code> を <code>$.Output</code> にしてください。</p>
 <p>こんな感じです。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/2c20ded524f2ae4f.png"></p>
-<p>この <code>ResultPath を使用して元の入力を出力に追加</code> を行うと、通常の出力に加えて、入力のデータも次のステートに渡せるようになります。つまりどういうことかと言うと、以下のように <code>SopInstances</code> が 入力で受けた <code>INSTANCE_ID</code> を出力の上部に追加しているのが分かりますでしょうか。<br> こんな感じで、次のステートに情報をアドオンして渡せるのです。</p>
+<p>この <code>ResultPath を使用して元の入力を出力に追加</code> を行うと、通常の出力に加えて、入力のデータも次のステートに渡せるようになります。つまりどういうことかと言うと、以下のように <code>StopInstances</code> が 入力で受けた <code>INSTANCE_ID</code> を出力の上部に追加しているのが分かりますでしょうか。<br> こんな感じで、次のステートに情報をアドオンして渡せるのです。</p>
 <p class="image-container"><img alt="パラメータストア" src="img/75ee809f3c26d57a.png"></p>
 <h3 is-upgraded>DescribeInstances</h3>
 <p><code>DescribeInstances</code> のブロックで行うことも 2 点で、<code>StopInstances</code> と同様です。</p>
@@ -533,7 +536,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="後片付け" duration="0">
+      <google-codelab-step label="後片付け" duration="5">
         <p>みなさんお疲れ様でした。ハンズオン終了後も継続して従量課金されないよう、本ハンズオンで作成したリソースは削除してください。<br> 継続して課金が行われるケースとしては、以下が考えられます。</p>
 <ul>
 <li>EC2 インスタンスが起動したまま、課金されていた</li>
@@ -564,10 +567,10 @@
     
   </google-codelab>
 
-  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
-  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
-  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
-  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
   <script src="//support.google.com/inapp/api.js"></script>
 
 </body>
