@@ -4,7 +4,7 @@ id: docs
 categories: codelab,markdown
 environments: Web
 status: Published
-feedback link: https://github.com/otanikohei/AWS-StepFunctions---Workflow-Handson
+feedback link: https://github.com/otanikohei/AWS-StepFunctions---Workflow-Handson/issues
 analytics: G-5E9NK9J1DK
 
 # AWS Step Functions Workflow Studio を使った入門ハンズオン
